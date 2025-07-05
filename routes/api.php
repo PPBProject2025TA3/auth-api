@@ -19,3 +19,7 @@ use App\Http\Controllers\UserController;
 Route::post('/user',[UserController::class,"Register"]);
 Route::get('/validate',[UserController::class,"ValidateToken"])->middleware('auth:api');
 Route::get('/logout',[UserController::class,"Logout"])->middleware('auth:api');
+
+Route::middleware('auth:api')->get('/me', function (Request $request) {
+    return response()->json($request->user());
+});
