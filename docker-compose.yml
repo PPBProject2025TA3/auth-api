@@ -1,25 +1,39 @@
-version : "3.5"
+version: '3.8'
+
 services:
-  mysql:
-    image: mysql:8
-    container_name: mysql 
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=root 
-      - MYSQL_DATABASE=laravel
-    volumes:
-      - "./mysql:/var/lib/mysql"
-  api:
-    depends_on:  
-      - mysql
-    image: ggmartinez/laravel:php-82
-    container_name: api 
+  auth-api:
+    build:
+      context: .
+    container_name: auth-api
     ports:
       - "8000:8000"
     volumes:
-      - "./:/app"
+      - .:/var/www
+    depends_on:
+      - sqlserver
+    environment:
+      DB_CONNECTION: sqlsrv
+      DB_HOST: sqlserver
+      DB_PORT: 1433
+      DB_DATABASE: auth_db
+      DB_USERNAME: sa
+      DB_PASSWORD: P4ssw0rd!
+    command: >
+      sh -c "sleep 10 &&
+             php artisan migrate --force &&
+             php artisan passport:install --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
 
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "P4ssw0rd!"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
 
-
-
+volumes:
+  sqlserver_data:
